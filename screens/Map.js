@@ -4,6 +4,8 @@ import MapView from 'react-native-maps';
 import Modal from 'react-native-modal';
 import Dropdown from 'react-native-modal-dropdown';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import* as Location from'expo-location';
+import* as Permissions from'expo-permissions';
 
 import * as theme from '../themes/theme';
 import { styles } from '../themes/styles';
@@ -11,69 +13,20 @@ import { styles } from '../themes/styles';
 const { Marker } = MapView;
 
 
-//APARCAMIENTOS
-const parkingsSpots = [
-  {
-    id: 1,
-    title: 'Parking 1',
-    price: 5,
-    rating: 4.2,
-    free: false,
-    coordinate: {
-      latitude: 60.201136,
-      longitude: 24.935004,
-    },
-    description: `Description about this parking lot
-
-Open year 2018
-Secure with CTV`,
-  },
-  {
-    id: 2,
-    title: 'Parking 2',
-    price: 7,
-    rating: 3.8,
-    free: true,
-    coordinate: {
-      latitude: 60.202219,
-      longitude: 24.933888,
-    },
-    description: `Description about this parking lot
-
-Open year 2014
-Secure with CTV`,
-  },
-  {
-    id: 3,
-    title: 'Parking 3',
-    price: 10,
-    rating: 4.9,
-    free: true,
-    coordinate: {
-      latitude: 60.201611,
-      longitude: 24.937697,
-    },
-    description: `Description about this parking lot
-
-Open year 2019
-Secure with CTV`,
-  },
-];
 
 class ParkingMap extends Component {
   state = {
     hours: {},
     active: null,
     activeModal: null,
+    parkings: []
   }
 
-  componentWillMount() {
-    const { parkings } = this.props;
+  async componentDidMount() {
     const hours = {};
-
+    const parkings = await getParkings();
     parkings.map(parking => {hours[parking.id] = 1});
-
-    this.setState({ hours });
+    this.setState({ parkings, hours });
   }
   
   handleHours = (id, value) => {
@@ -111,7 +64,7 @@ class ParkingMap extends Component {
         scrollEventThrottle={16}
         snapToAlignment="center"
         style={styles.parkings}
-        data={this.props.parkings}
+        data={this.state.parkings}
         extraData={this.state}
         keyExtractor={(item, index) => `${item.id}`}
         renderItem={({ item }) => this.renderParking(item)}
@@ -255,7 +208,8 @@ class ParkingMap extends Component {
 
   //MAPA
   render() {
-    const { currentPosition, parkings } = this.props;
+    const { parkings } = this.state;
+    const { currentPosition } = this.props;
 
     return (
       <View style={styles.container}>
@@ -289,6 +243,15 @@ class ParkingMap extends Component {
   }
 }
 
+async function getParkings() {
+  const url = 'https://parking-finder-api.azurewebsites.net/parkings';
+  
+  const response = await fetch(url);
+  const responseData = await response.json();
+  return responseData;
+}
+
+
 //LOCALIZACION INICIAL DEL MAPA
 ParkingMap.defaultProps = {
   currentPosition: {
@@ -296,9 +259,27 @@ ParkingMap.defaultProps = {
     longitude:  24.935192,
     latitudeDelta: 0.0122,
     longitudeDelta: 0.0121,
-  },
-  parkings: parkingsSpots,
+  }
 }
 
 export default ParkingMap;
 
+//https://parking-finder-api.azurewebsites.net/parkings
+
+/*
+const[location, setLocation] = useState(null);
+  useEffect(() => {
+    this.getLocation();
+  }, []);
+
+  getLocation= async() => {
+    //Checkpermission
+    let {status} =  awaitPermissions.askAsync(Permissions.LOCATION);
+    if (status!== 'granted') {
+      Alert.alert('No permission to access location');
+    }else{
+      let location= awaitLocation.getCurrentPositionAsync({});
+      setLocation(location);
+    }
+  };
+*/
