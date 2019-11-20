@@ -114,6 +114,7 @@ class ParkingMap extends Component {
                 <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
               </View>
             </TouchableOpacity>
+            
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -194,20 +195,35 @@ class ParkingMap extends Component {
             </View>
           </View>
           <View>
-            <TouchableOpacity style={styles.payBtn}>
+          
+
+          {activeModal.free ? 
+          
+            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, false))}>
               <Text style={styles.payText}>
                 Proceed to pay {activeModal.price * hours[activeModal.id]}€
               </Text>
               <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
             </TouchableOpacity>
+              
+              :
+
+            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, true))}>
+              <Text style={styles.payText}>
+                FREE Parking
+              </Text>
+              <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
+            </TouchableOpacity>
+            }
+
           </View>
         </View>
       </Modal>
     );
   }
 
-  //MAPA
-  render() {
+   //MAP
+   render() {
     const { parkings } = this.state;
     const { currentPosition } = this.props;
 
@@ -229,6 +245,7 @@ class ParkingMap extends Component {
                   styles.shadow,
                   this.state.active === parking.id ? styles.active : null
                 ]}>
+                  <Text style={styles.markerId}>{parking.title}, </Text>
                   <Text style={styles.markerPrice}>{parking.price}€</Text>
                   <Text style={styles.markerStatus}> ({parking.free ? 'Free' : 'Reserved'})</Text>
                 </View>
@@ -242,6 +259,35 @@ class ParkingMap extends Component {
     )
   }
 }
+
+  async function updateParking(parkingId, isFree){
+    const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
+    let parkingData = {
+      id: parkingId,
+      free: isFree
+    }
+
+    const response = await fetch(url, {
+      method: 'PUT', 
+      body: JSON.stringify(parkingData), // data can be `string` or {object}!
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status != 200 ){
+      console.log(response.statusText);
+      alert(response.statusText);
+    }
+
+    const newParkings = await getParkings();
+    //return newParkings;
+    return { 
+      active: parkingId,
+      activeModal: await response.json(),
+      parkings: newParkings}
+  }
+
 
 async function getParkings() {
   const url = 'https://parking-finder-api.azurewebsites.net/parkings';
