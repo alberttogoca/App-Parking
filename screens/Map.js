@@ -101,6 +101,8 @@ class ParkingMap extends Component {
             </View>
             
             <TouchableOpacity style={styles.buy} onPress={() => this.setState({ activeModal: item })}>
+             
+             {item.free ? 
               <View style={styles.buyTotal}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text style={styles.buyTotalPrice}>{totalPrice}</Text>
@@ -109,7 +111,17 @@ class ParkingMap extends Component {
                 <Text style={{ color: theme.COLORS.white }}>
                   {item.price}€x{hours[item.id]}hrs
                 </Text>
-              </View>
+                </View>
+
+                :
+
+                <View style={styles.buyTotal}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ color: theme.COLORS.white, fontWeight: "bold" }}>Info</Text>
+                </View>
+                </View>
+                
+              }
               <View style={styles.buyBtn}>
                 <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
               </View>
@@ -187,6 +199,9 @@ class ParkingMap extends Component {
               <Text style={{ fontSize: theme.SIZES.icon * 1.15 }}> {activeModal.free ? 'Free' : 'Reserved'}</Text>
             </View>
           </View>
+
+          
+          {activeModal.free &&  
           <View style={styles.modalHours}>
             <Text style={{ textAlign: 'center', fontWeight: '500' }}>Choose your Booking Period:</Text>
             <View style={styles.modalHoursDropdown}>
@@ -194,6 +209,7 @@ class ParkingMap extends Component {
               <Text style={{ color: theme.COLORS.gray }}>hrs</Text>
             </View>
           </View>
+          }
           <View>
           
 
@@ -210,7 +226,7 @@ class ParkingMap extends Component {
 
             <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, true))}>
               <Text style={styles.payText}>
-                FREE Parking
+                Free Parking
               </Text>
               <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
             </TouchableOpacity>
