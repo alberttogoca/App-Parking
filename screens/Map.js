@@ -12,7 +12,7 @@ import { styles } from '../themes/styles';
 
 const { Marker } = MapView;
 
-
+import Header from '../components/Header';
 
 class ParkingMap extends Component {
   state = {
@@ -36,23 +36,6 @@ class ParkingMap extends Component {
     hours[id] = value;
 
     this.setState({ hours });
-  }
-
-  //PARTE DE ARRIBA (header)
-  renderHeader() {
-    return (
-      <View style={styles.header}>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <Text style={styles.headerTitle}>Detected location</Text>
-          <Text style={styles.headerLocation}>Helsinki, FI</Text>
-        </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end', }}>
-          <TouchableWithoutFeedback>
-            <Ionicons name="ios-menu" size={theme.SIZES.icon * 1.5} />
-          </TouchableWithoutFeedback>
-        </View>
-      </View>
-    )
   }
 
   //PARTE DE ABAJO PARA COMPRAR (item de la flatlist)
@@ -228,7 +211,7 @@ class ParkingMap extends Component {
 
     return (
       <View style={styles.container}>
-        {this.renderHeader()}
+        <Header/>
         <MapView
           initialRegion={currentPosition}
           style={styles.map}
