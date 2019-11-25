@@ -46,7 +46,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: theme.SIZES.base * 1.5,
     paddingVertical: theme.SIZES.base,
-    backgroundColor: theme.COLORS.red,
+    backgroundColor: theme.COLORS.blue,
     borderRadius: 6,
   },
   buyTotal: {
@@ -73,7 +73,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.COLORS.white,
   },
-  markerPrice: { color: theme.COLORS.red, fontWeight: 'bold', },
+  markerPrice: { color: theme.COLORS.blue, fontWeight: 'bold', },
   markerStatus: { color: theme.COLORS.gray },
   shadow: {
     shadowColor: theme.COLORS.black,
@@ -85,7 +85,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   active: {
-    borderColor: theme.COLORS.red,
+    borderColor: theme.COLORS.blue,
   },
   hours: {
     flex: 1,
@@ -158,7 +158,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: theme.SIZES.base * 1.5,
-    backgroundColor: theme.COLORS.red,
+    backgroundColor: theme.COLORS.blue,
   },
   payText: {
     fontWeight: '600',
