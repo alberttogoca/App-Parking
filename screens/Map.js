@@ -285,7 +285,6 @@ async function getLocation() {
     Alert.alert('No permission to access location');
   }else{
     let location = await Location.getCurrentPositionAsync({});
-    console.log(location);
     return {
       latitude: location.coords.latitude,
       longitude:  location.coords.longitude,
@@ -304,22 +303,4 @@ async function getLocation() {
 
 export default ParkingMap;
 
-//https://parking-finder-api.azurewebsites.net/parkings
 
-/*
-const[location, setLocation] = useState(null);
-  useEffect(() => {
-    this.getLocation();
-  }, []);
-
-  getLocation= async() => {
-    //Checkpermission
-    let {status} =  awaitPermissions.askAsync(Permissions.LOCATION);
-    if (status!== 'granted') {
-      Alert.alert('No permission to access location');
-    }else{
-      let location= awaitLocation.getCurrentPositionAsync({});
-      setLocation(location);
-    }
-  };
-*/
