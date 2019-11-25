@@ -52,6 +52,7 @@ export const styles = StyleSheet.create({
   buyTotal: {
     flex: 1,
     justifyContent: 'space-evenly',
+    minHeight: 60
   },
   buyTotalPrice: {
     color: theme.COLORS.white,

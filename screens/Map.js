@@ -83,7 +83,7 @@ class ParkingMap extends Component {
 
                 <View style={styles.buyTotal}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ color: theme.COLORS.white, fontWeight: "bold" }}>Info</Text>
+                  <Text style={{ color: theme.COLORS.white, fontWeight: "bold", fontSize: 18}}>Info</Text>
                 </View>
                 </View>
                 
@@ -98,7 +98,7 @@ class ParkingMap extends Component {
       </TouchableWithoutFeedback>
     )
   }
-  
+ 
   //PARTE DE ABAJO PARA COMPRAR (horas del dropdown menu)
   renderHours(id) {
     const { hours } = this.state;
