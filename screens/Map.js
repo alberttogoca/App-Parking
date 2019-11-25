@@ -19,14 +19,16 @@ class ParkingMap extends Component {
     hours: {},
     active: null,
     activeModal: null,
-    parkings: []
+    parkings: [],
+    selectedItem: null
   }
 
   async componentDidMount() {
     const hours = {};
     const parkings = await getParkings();
     parkings.map(parking => {hours[parking.id] = 1});
-    this.setState({ parkings, hours });
+    const selectedItem = parkings[0];
+    this.setState({ parkings, hours, selectedItem});
   }
   
   handleHours = (id, value) => {
@@ -53,32 +55,13 @@ class ParkingMap extends Component {
     )
   }
 
-  //PARTE DE ABAJO PARA COMPRAR (flatlist)
-  renderParkings = () => {
-    return (
-      <FlatList
-        horizontal
-        pagingEnabled
-        scrollEnabled
-        showsHorizontalScrollIndicator={true}
-        scrollEventThrottle={16}
-        snapToAlignment="center"
-        style={styles.parkings}
-        data={this.state.parkings}
-        extraData={this.state}
-        keyExtractor={(item, index) => `${item.id}`}
-        renderItem={({ item }) => this.renderParking(item)}
-      />
-    )
-  }
-
   //PARTE DE ABAJO PARA COMPRAR (item de la flatlist)
   renderParking = (item) => {
     const { hours } = this.state;
     const totalPrice = item.price * hours[item.id];
- 
+
     return (
-      <TouchableWithoutFeedback key={`parking-${item.id}`} onPress={() => this.setState({ active: item.id })} >
+      <TouchableWithoutFeedback key={`parking-${item.id}`}>
         <View style={[styles.parking, styles.shadow]}>
           <View style={styles.hours}>
             <Text style={styles.hoursTitle}>x {item.spots} {item.title}</Text>
@@ -255,11 +238,11 @@ class ParkingMap extends Component {
               key={`marker-${parking.id}`}
               coordinate={parking.coordinate}
             >
-              <TouchableWithoutFeedback onPress={() => this.setState({ active: parking.id })} >
+              <TouchableWithoutFeedback onPress={() => this.setState({ selectedItem: parking })} >
                 <View style={[
                   styles.marker,
                   styles.shadow,
-                  this.state.active === parking.id ? styles.active : null
+                  this.state.selectedItem.id === parking.id ? styles.active : null
                 ]}>
                   <Text style={styles.markerId}>{parking.title}, </Text>
                   <Text style={styles.markerPrice}>{parking.price}€</Text>
@@ -269,7 +252,7 @@ class ParkingMap extends Component {
             </Marker>
           ))}
         </MapView>
-        {this.renderParkings()}
+        { this.state.selectedItem && this.renderParking(this.state.selectedItem)}
         {this.renderModal()}
       </View>
     )
@@ -291,16 +274,12 @@ class ParkingMap extends Component {
       }
     });
 
-    if (response.status != 200 ){
-      console.log(response.statusText);
-      alert(response.statusText);
-    }
 
     const newParkings = await getParkings();
-    //return newParkings;
+    let parking = await response.json();
     return { 
-      active: parkingId,
-      activeModal: await response.json(),
+      selectedItem: parking,
+      activeModal: parking,
       parkings: newParkings}
   }
 
