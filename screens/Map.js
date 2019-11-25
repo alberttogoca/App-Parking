@@ -20,7 +20,8 @@ class ParkingMap extends Component {
     active: null,
     activeModal: null,
     parkings: [],
-    selectedItem: null
+    selectedItem: null,
+    currentPosition: null
   }
 
   async componentDidMount() {
@@ -28,7 +29,8 @@ class ParkingMap extends Component {
     const parkings = await getParkings();
     parkings.map(parking => {hours[parking.id] = 1});
     const selectedItem = parkings[0];
-    this.setState({ parkings, hours, selectedItem});
+    const currentPosition = await getLocation();
+    this.setState({ parkings, hours, selectedItem, currentPosition});
   }
   
   handleHours = (id, value) => {
@@ -206,8 +208,7 @@ class ParkingMap extends Component {
 
    //MAP
    render() {
-    const { parkings } = this.state;
-    const { currentPosition } = this.props;
+    const { parkings, currentPosition } = this.state;
 
     return (
       <View style={styles.container}>
@@ -276,15 +277,30 @@ async function getParkings() {
 }
 
 
-//LOCALIZACION INICIAL DEL MAPA
-ParkingMap.defaultProps = {
-  currentPosition: {
+
+async function getLocation() {
+  //Checkpermission
+  let {status} =  await Permissions.askAsync(Permissions.LOCATION);
+  if (status!== 'granted') {
+    Alert.alert('No permission to access location');
+  }else{
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location);
+    return {
+      latitude: location.coords.latitude,
+      longitude:  location.coords.longitude,
+      latitudeDelta: 0.0122,
+      longitudeDelta: 0.0121,
+    };
+  }
+  return {
     latitude: 60.2000652,
     longitude:  24.935192,
     latitudeDelta: 0.0122,
     longitudeDelta: 0.0121,
-  }
-}
+  };
+};
+
 
 export default ParkingMap;
 
