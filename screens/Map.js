@@ -183,7 +183,7 @@ class ParkingMap extends Component {
 
           {activeModal.free ? 
           
-            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, false))}>
+            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, false, hours))}>
               <Text style={styles.payText}>
                 Proceed to pay {activeModal.price * hours[activeModal.id]}€
               </Text>
@@ -192,7 +192,7 @@ class ParkingMap extends Component {
               
               :
 
-            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, true))}>
+            <TouchableOpacity style={styles.payBtn} onPress={ async () => this.setState(await updateParking(activeModal.id, true, hours))}>
               <Text style={styles.payText}>
                 Free Parking
               </Text>
@@ -243,11 +243,15 @@ class ParkingMap extends Component {
   }
 }
 
-  async function updateParking(parkingId, isFree){
+async function updateParking(parkingId, isFree, hours){
     const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
+
+    const reservedDate = getLocalDate();
+    reservedDate.setHours(reservedDate.getHours() + hours[parkingId]);
     let parkingData = {
       id: parkingId,
-      free: isFree
+      free: isFree,
+      reservedDate: isFree ? null : reservedDate.toJSON()
     }
 
     const response = await fetch(url, {
@@ -258,15 +262,13 @@ class ParkingMap extends Component {
       }
     });
 
-
     const newParkings = await getParkings();
     let parking = await response.json();
     return { 
       selectedItem: parking,
       activeModal: parking,
       parkings: newParkings}
-  }
-
+}
 
 async function getParkings() {
   const url = 'https://parking-finder-api.azurewebsites.net/parkings';
@@ -275,8 +277,6 @@ async function getParkings() {
   const responseData = await response.json();
   return responseData;
 }
-
-
 
 async function getLocation() {
   //Checkpermission
@@ -300,6 +300,11 @@ async function getLocation() {
   };
 };
 
+function getLocalDate() {
+  let date = new Date();
+  var newDate = new Date(date.getTime() - date.getTimezoneOffset()*60*1000);
+  return newDate;   
+}
 
 export default ParkingMap;
 
