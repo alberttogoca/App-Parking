@@ -29,12 +29,12 @@ class ParkingMap extends Component {
   
   async componentDidMount() {
     const hours = {};
-    const parkings = await getParkings();
+    const parkings = await this.getParkings();
     parkings.map(parking => { hours[parking.id] = 1 });
     const selectedItem = parkings[0];
-    const currentPosition = await getLocation();
+    const currentPosition = await this.getLocation();
     this.setState({ parkings, hours, selectedItem, currentPosition });
-    this.showTime();
+    this.getReserveCountdown();
 
   }
 
@@ -208,7 +208,7 @@ class ParkingMap extends Component {
 
             {activeModal.free ?
 
-              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await updateParking(activeModal.id, false, hours))}>
+              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await this.updateParking(activeModal.id, false, hours))}>
                 <Text style={styles.payText}>
                   Proceed to pay {activeModal.price * hours[activeModal.id]}€
               </Text>
@@ -217,7 +217,7 @@ class ParkingMap extends Component {
 
               :
 
-              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await updateParking(activeModal.id, true, hours))}>
+              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await this.updateParking(activeModal.id, true, hours))}>
                 <Text style={styles.payText}>
                   Free Parking
               </Text>
@@ -267,8 +267,7 @@ class ParkingMap extends Component {
     )
   }
 
-  //Time Counter
-  showTime = () =>{
+  getReserveCountdown = () =>{
 
     const { selectedItem } = this.state;
     if(selectedItem && !selectedItem.free){
@@ -278,7 +277,7 @@ class ParkingMap extends Component {
       this.setState({timeToFreeParking});
     }
 
-    setTimeout(this.showTime, 1000);
+    setTimeout(this.getReserveCountdown, 1000);
   
   }
 
@@ -298,64 +297,66 @@ class ParkingMap extends Component {
     return `${hour}:${min}:${seg}` ;
   }
 
-}
-async function updateParking(parkingId, isFree, hours) {
-  const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
-
-  const reservedDate = new Date();
-  reservedDate.setHours(reservedDate.getHours() + hours[parkingId]);
-  let parkingData = {
-    id: parkingId,
-    free: isFree,
-    reservedDate: isFree ? null : reservedDate.toJSON()
-  }
-
-  const response = await fetch(url, {
-    method: 'PUT',
-    body: JSON.stringify(parkingData), // data can be `string` or {object}!
-    headers: {
-      'Content-Type': 'application/json'
+   updateParking = async (parkingId, isFree, hours) => {
+    const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
+  
+    const reservedDate = new Date();
+    reservedDate.setHours(reservedDate.getHours() + hours[parkingId]);
+    let parkingData = {
+      id: parkingId,
+      free: isFree,
+      reservedDate: isFree ? null : reservedDate.toJSON()
     }
-  });
-
-  const newParkings = await getParkings();
-  let parking = await response.json();
-  return {
-    selectedItem: parking,
-    activeModal: parking,
-    parkings: newParkings
-  }
-}
-
-async function getParkings() {
-  const url = 'https://parking-finder-api.azurewebsites.net/parkings';
-
-  const response = await fetch(url);
-  const responseData = await response.json();
-  return responseData;
-}
-
-async function getLocation() {
-  //Checkpermission
-  let { status } = await Permissions.askAsync(Permissions.LOCATION);
-  if (status !== 'granted') {
-    Alert.alert('No permission to access location');
-  } else {
-    let location = await Location.getCurrentPositionAsync({});
+  
+    const response = await fetch(url, {
+      method: 'PUT',
+      body: JSON.stringify(parkingData), // data can be `string` or {object}!
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  
+    const newParkings = await this.getParkings();
+    let parking = await response.json();
     return {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
+      selectedItem: parking,
+      activeModal: parking,
+      parkings: newParkings
+    }
+  }
+  
+   getParkings = async () => {
+    const url = 'https://parking-finder-api.azurewebsites.net/parkings';
+  
+    const response = await fetch(url);
+    const responseData = await response.json();
+    return responseData;
+  }
+  
+   getLocation = async () => {
+    //Checkpermission
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      Alert.alert('No permission to access location');
+    } else {
+      let location = await Location.getCurrentPositionAsync({});
+      return {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0122,
+        longitudeDelta: 0.0121,
+      };
+    }
+    return {
+      latitude: 60.2000652,
+      longitude: 24.935192,
       latitudeDelta: 0.0122,
       longitudeDelta: 0.0121,
     };
-  }
-  return {
-    latitude: 60.2000652,
-    longitude: 24.935192,
-    latitudeDelta: 0.0122,
-    longitudeDelta: 0.0121,
   };
-};
+  
+
+}
 
 
 
