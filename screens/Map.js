@@ -50,10 +50,20 @@ class ParkingMap extends Component {
         <View style={[styles.parking, styles.shadow]}>
           <View style={styles.hours}>
             <Text style={styles.hoursTitle}>x {item.spots} {item.title}</Text>
+
+            {item.free && 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {this.renderHours(item.id)}
               <Text style={{ color: theme.COLORS.gray }}>hours</Text>
             </View>
+            }
+
+            {item.free == false && 
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ color: theme.COLORS.gray }}> (Reserved)</Text>
+            </View>
+            }
+
           </View>
 
           <View style={styles.parkingInfoContainer}>
@@ -128,6 +138,8 @@ class ParkingMap extends Component {
 
     if (!activeModal) return null;
 
+    let reservedDate = new Date(activeModal.reservedDate).toLocaleString();
+
     return (
       <Modal
         isVisible
@@ -178,6 +190,16 @@ class ParkingMap extends Component {
             </View>
           </View>
           }
+
+          {activeModal.free == false &&  
+          <View style={styles.modalHours}>
+            <Text style={{ textAlign: 'center', fontWeight: '500' }}>You must free your parking at:</Text>
+            <View style={styles.modalHoursDropdown}>  
+              <Text style={{ color: theme.COLORS.gray }}>{reservedDate}</Text>
+            </View>
+          </View>
+          }
+
           <View>
           
 
@@ -246,7 +268,7 @@ class ParkingMap extends Component {
 async function updateParking(parkingId, isFree, hours){
     const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
 
-    const reservedDate = getLocalDate();
+    const reservedDate = new Date();
     reservedDate.setHours(reservedDate.getHours() + hours[parkingId]);
     let parkingData = {
       id: parkingId,
@@ -300,11 +322,6 @@ async function getLocation() {
   };
 };
 
-function getLocalDate() {
-  let date = new Date();
-  var newDate = new Date(date.getTime() - date.getTimezoneOffset()*60*1000);
-  return newDate;   
-}
 
 export default ParkingMap;
 
