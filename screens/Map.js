@@ -34,7 +34,7 @@ class ParkingMap extends Component {
     const selectedItem = parkings[0];
     const currentPosition = await this.getLocation();
     this.setState({ parkings, hours, selectedItem, currentPosition });
-    this.getReserveCountdown();
+    await this.updateParkingsStatus();
 
   }
 
@@ -208,7 +208,7 @@ class ParkingMap extends Component {
 
             {activeModal.free ?
 
-              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await this.updateParking(activeModal.id, false, hours))}>
+              <TouchableOpacity style={styles.payBtn} onPress={async () => await this.updateParking(activeModal.id, false)}>
                 <Text style={styles.payText}>
                   Proceed to pay {activeModal.price * hours[activeModal.id]}€
               </Text>
@@ -217,7 +217,7 @@ class ParkingMap extends Component {
 
               :
 
-              <TouchableOpacity style={styles.payBtn} onPress={async () => this.setState(await this.updateParking(activeModal.id, true, hours))}>
+              <TouchableOpacity style={styles.payBtn} onPress={async () => await this.updateParking(activeModal.id, true)}>
                 <Text style={styles.payText}>
                   Free Parking
               </Text>
@@ -267,22 +267,41 @@ class ParkingMap extends Component {
     )
   }
 
-  getReserveCountdown = () =>{
-
-    const { selectedItem } = this.state;
-    if(selectedItem && !selectedItem.free){
-      
-      let reservedDate = new Date(selectedItem.reservedDate);
-      let timeToFreeParking = this.CalculateDiffTime(reservedDate);
-      this.setState({timeToFreeParking});
-    }
-
-    setTimeout(this.getReserveCountdown, 1000);
+  updateParkingsStatus = async () =>{
+    this.updateReserveCountdown();
+    await this.checkReserveParking();
+    setTimeout(this.updateParkingsStatus, 1000);
   
   }
 
-  CalculateDiffTime(reservedDate) {
-    let ms = reservedDate - new Date();
+  updateReserveCountdown = () =>{
+    const { selectedItem } = this.state;
+    if(selectedItem && !selectedItem.free){
+      let reservedDate = new Date(selectedItem.reservedDate);
+      let diffTime = reservedDate - new Date(); 
+
+      if (diffTime > 0){
+      let timeToFreeParking = this.CalculateDiffTime(diffTime);
+      this.setState({timeToFreeParking});
+      }
+    }
+  }
+
+  checkReserveParking = async () =>{
+    const { parkings } = this.state;
+    let reservedParkings = parkings.filter(p => !p.free);
+    for(const parking of reservedParkings){
+      let reservedDate = new Date(parking.reservedDate);
+      let diffTime = reservedDate - new Date();
+      if (diffTime <= 0){
+        console.log("liberamos el " + parking.id );
+      await this.updateParking(parking.id, true);
+      }
+    }
+
+  }
+
+  CalculateDiffTime(ms) {
     let  h, m, s;
     s = Math.floor(ms / 1000);
     m = Math.floor(s / 60);
@@ -297,11 +316,11 @@ class ParkingMap extends Component {
     return `${hour}:${min}:${seg}` ;
   }
 
-   updateParking = async (parkingId, isFree, hours) => {
+  updateParking = async (parkingId, isFree) => {
     const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
   
     const reservedDate = new Date();
-    reservedDate.setHours(reservedDate.getHours() + hours[parkingId]);
+    reservedDate.setHours(reservedDate.getHours() + this.state.hours[parkingId]);
     let parkingData = {
       id: parkingId,
       free: isFree,
@@ -316,12 +335,17 @@ class ParkingMap extends Component {
       }
     });
   
-    const newParkings = await this.getParkings();
     let parking = await response.json();
-    return {
-      selectedItem: parking,
-      activeModal: parking,
-      parkings: newParkings
+
+    const newParkings = await this.getParkings();
+    this.setState({parkings: newParkings});
+
+    if(this.state.selectedItem && this.state.selectedItem.id == parking.id){
+    this.setState({selectedItem: parking});
+    }
+
+    if(this.state.activeModal && this.state.activeModal.id == parking.id){
+    this.setState({activeModal: parking});
     }
   }
   
