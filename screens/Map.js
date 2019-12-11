@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
+import { Text, View, TouchableOpacity, TouchableWithoutFeedback, Alert } from 'react-native'
 import MapView from 'react-native-maps';
 import Modal from 'react-native-modal';
 import Dropdown from 'react-native-modal-dropdown';
@@ -45,7 +45,7 @@ class ParkingMap extends Component {
     this.setState({ hours });
   }
 
-  //PARTE DE ABAJO PARA COMPRAR (item de la flatlist)
+  //Parkings menu
   renderParking = (item) => {
     const { hours, timeToFreeParking } = this.state;
     const totalPrice = item.price * hours[item.id];
@@ -53,25 +53,24 @@ class ParkingMap extends Component {
     return (
       <TouchableWithoutFeedback key={`parking-${item.id}`}>
         <View style={[styles.parking, styles.shadow]}>
+         
           <View style={styles.hours}>
             <Text style={styles.hoursTitle}>x {item.spots} {item.title}</Text>
-
             {item.free &&
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {this.renderHours(item.id)}
                 <Text style={{ color: theme.COLORS.gray }}>hours</Text>
               </View>
             }
-
             {item.free == false &&
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ color: theme.COLORS.gray }}> Free in: {timeToFreeParking}</Text>
               </View>
             }
-
           </View>
 
           <View style={styles.parkingInfoContainer}>
+
             <View style={styles.parkingInfo}>
               <View style={styles.parkingIcon}>
                 <Ionicons name='ios-pricetag' size={theme.SIZES.icon} color={theme.COLORS.gray} />
@@ -84,7 +83,6 @@ class ParkingMap extends Component {
             </View>
 
             <TouchableOpacity style={styles.buy} onPress={() => this.setState({ activeModal: item })}>
-
               {item.free ?
                 <View style={styles.buyTotal}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -95,15 +93,12 @@ class ParkingMap extends Component {
                     {item.price}€x{hours[item.id]}hrs
                 </Text>
                 </View>
-
                 :
-
                 <View style={styles.buyTotal}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={{ color: theme.COLORS.white, fontWeight: "bold", fontSize: 18 }}>Info</Text>
                   </View>
                 </View>
-
               }
               <View style={styles.buyBtn}>
                 <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
@@ -116,7 +111,7 @@ class ParkingMap extends Component {
     )
   }
 
-  //PARTE DE ABAJO PARA COMPRAR (horas del dropdown menu)
+  //Times dropdown menu
   renderHours(id) {
     const { hours } = this.state;
     const availableHours = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -137,7 +132,7 @@ class ParkingMap extends Component {
     )
   }
 
-  //VENTANA AL PULSAR EL BOTON CUADRADO (modal)
+  //Modal
   renderModal() {
     const { activeModal, hours, timeToFreeParking } = this.state;
 
@@ -207,16 +202,13 @@ class ParkingMap extends Component {
 
 
             {activeModal.free ?
-
               <TouchableOpacity style={styles.payBtn} onPress={async () => await this.updateParking(activeModal.id, false)}>
                 <Text style={styles.payText}>
                   Proceed to pay {activeModal.price * hours[activeModal.id]}€
               </Text>
                 <FontAwesome name='angle-right' size={theme.SIZES.icon * 1.75} color={theme.COLORS.white} />
               </TouchableOpacity>
-
               :
-
               <TouchableOpacity style={styles.payBtn} onPress={async () => await this.updateParking(activeModal.id, true)}>
                 <Text style={styles.payText}>
                   Free Parking
@@ -317,7 +309,7 @@ class ParkingMap extends Component {
   }
 
   updateParking = async (parkingId, isFree) => {
-    const url = 'https://parking-finder-api.azurewebsites.net/parkings/reserve';
+    const url = 'https://parking-finder-api2.azurewebsites.net/parkings/reserve';
   
     const reservedDate = new Date();
     reservedDate.setHours(reservedDate.getHours() + this.state.hours[parkingId]);
@@ -350,7 +342,7 @@ class ParkingMap extends Component {
   }
   
    getParkings = async () => {
-    const url = 'https://parking-finder-api.azurewebsites.net/parkings';
+    const url = 'https://parking-finder-api2.azurewebsites.net/parkings';
   
     const response = await fetch(url);
     const responseData = await response.json();
